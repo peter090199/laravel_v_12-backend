@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers\Api;
-
 use App\Http\Controllers\Api\SharedRoutine\BaseController;
 use App\Models\AccessRight;
 use Illuminate\Http\Request;
