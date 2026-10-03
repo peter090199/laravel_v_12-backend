@@ -12,7 +12,7 @@ use App\Http\Controllers\Api\WebsiteChatController;
 use App\Http\Controllers\Api\AccessRightController;
 use App\Http\Controllers\Api\MenuAccessController;
 use App\Http\Controllers\Api\AccountUserController;
-
+use App\Http\Controllers\Api\DatabaseBackupController;
 
 Route::post('/website-chat', [WebsiteChatController::class, 'chat']);
 Route::prefix('auth')->group(function () {
@@ -76,4 +76,12 @@ Route::middleware('auth:sanctum')->prefix('role-permissions')->group(function ()
 Route::middleware('auth:sanctum')->prefix('auth')->group(function () {
      Route::get('account-users', [AccountUserController::class, 'index']);
     Route::delete('account-users/{id}', [AccountUserController::class, 'destroy']);
+});
+Route::prefix('auth/database')->middleware('auth:sanctum')->group(function () {
+    Route::get('backups', [DatabaseBackupController::class, 'index']);
+    Route::post('backup', [DatabaseBackupController::class, 'backup']);
+    Route::post('import', [DatabaseBackupController::class, 'import']);
+    Route::post('backups/{id}/restore', [DatabaseBackupController::class, 'restore']);
+    Route::get('backups/{id}/download', [DatabaseBackupController::class, 'download']);
+    Route::delete('backups/{id}', [DatabaseBackupController::class, 'destroy']);
 });
