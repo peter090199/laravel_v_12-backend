@@ -24,7 +24,7 @@ class AuthController extends BaseController
          // ONLY get role-user
         $accessRight = AccessRight::where('access_right_name','role-user')->first();
         if (!$accessRight) {
-             return $this->sendServerError( $accessRight,'role-user access right not found', 500);
+             return $this->sendServerError($accessRight,'role-user access right not found');
         }
         $user = User::create([
             'user_code'         => $this->generateNextUserCode(),

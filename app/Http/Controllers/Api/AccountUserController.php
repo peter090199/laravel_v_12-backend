@@ -8,6 +8,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 class AccountUserController extends BaseController
@@ -21,7 +23,7 @@ class AccountUserController extends BaseController
             if ($request->filled('search')) {
                 $s = '%' . $request->search . '%';
 
-                $query->where(fn ($q) => $q
+                $query->where(fn($q) => $q
                     ->where('username', 'like', $s)
                     ->orWhere('email', 'like', $s)
                     ->orWhere('user_code', 'like', $s)
@@ -35,9 +37,18 @@ class AccountUserController extends BaseController
             $users = $query
                 ->orderBy('username')
                 ->get([
-                    'id', 'user_code', 'access_right_id', 'access_right_name',
-                    'username', 'email', 'contact', 'address', 'avatar',
-                    'email_verified_at', 'created_at', 'updated_at',
+                    'id',
+                    'user_code',
+                    'access_right_id',
+                    'access_right_name',
+                    'username',
+                    'email',
+                    'contact',
+                    'address',
+                    'avatar',
+                    'email_verified_at',
+                    'created_at',
+                    'updated_at',
                 ])
                 ->map(function (User $user) {
                     $data = $user->toArray();
@@ -78,6 +89,77 @@ class AccountUserController extends BaseController
             $user->delete();
 
             return $this->sendMessage('User deleted successfully');
+        } catch (Throwable $e) {
+            return $this->sendServerError($e);
+        }
+    }
+
+    public function resetPassword(Request $request): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'currentPassword' => [
+                    'required',
+                    'string',
+                ],
+
+                'newPassword' => [
+                    'required',
+                    'string',
+                    'min:8',
+                    'confirmed',
+                ],
+            ]);
+
+            $user = $request->user();
+
+            if (!$user) {
+                return $this->sendMessage(
+                    'Unauthenticated.',
+                    401
+                );
+            }
+
+            // Check current password
+            if (!Hash::check(
+                $validated['currentPassword'],
+                $user->password
+            )) {
+                return $this->sendMessage(
+                    'Your current password is incorrect.',
+                    401
+                );
+            }
+
+            // Prevent using the same password
+            if (Hash::check(
+                $validated['newPassword'],
+                $user->password
+            )) {
+                return $this->sendMessage(
+                    'The new password must be different from your current password.',
+                    422
+                );
+            }
+
+            // Update password
+            $user->password = Hash::make(
+                $validated['newPassword']
+            );
+
+            $user->save();
+
+            // Optional: revoke all existing Sanctum tokens
+            // Uncomment if you want the user to log in again
+            // after changing their password.
+            //
+            // $user->tokens()->delete();
+
+            return $this->sendMessage(
+                'Password updated successfully.'
+            );
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (Throwable $e) {
             return $this->sendServerError($e);
         }
