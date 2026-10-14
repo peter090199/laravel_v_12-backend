@@ -18,13 +18,15 @@ class BaseController extends Controller
             'message' => $message,
         ], $code);
     }
-    public function sendResponse($result, string $message = 'Success', int $code = 200): JsonResponse
+    public function sendResponse($result = null, string $message = 'Success', int $code = 200): JsonResponse
     {
         return response()->json([
             'success' => true,
             'message' => $message,
+            'data'    => $result,
         ], $code);
     }
+
     public function  getResponse($result, string $message = 'Success', int $code = 200): JsonResponse
     {
         return response()->json([

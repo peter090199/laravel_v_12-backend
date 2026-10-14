@@ -13,8 +13,11 @@ use App\Http\Controllers\Api\AccessRightController;
 use App\Http\Controllers\Api\MenuAccessController;
 use App\Http\Controllers\Api\AccountUserController;
 use App\Http\Controllers\Api\DatabaseBackupController;
+use App\Http\Controllers\Api\Files\DepartmentController;
 use App\Http\Controllers\Api\Files\ShiftController;
 use App\Http\Controllers\Api\LicenseController;
+use App\Http\Controllers\Api\Files\DesignationController;
+use App\Http\Controllers\Api\Files\EmployeeController;
 
 Route::post('/website-chat', [WebsiteChatController::class, 'chat']);
 Route::prefix('auth')->group(function () {
@@ -103,5 +106,28 @@ Route::prefix('shifts')->middleware('auth:sanctum')->group(function () {
     Route::get('getShifts', [ShiftController::class, 'index']);
     Route::post('saveShifts', [ShiftController::class, 'store']);
     Route::put('updateShifts/{id}', [ShiftController::class, 'update']);
-    Route::delete('deleteShifts/{id}', [ShiftController::class,'destroy']);
+    Route::delete('deleteShifts/{id}', [ShiftController::class, 'destroy']);
+});
+Route::prefix('departments')->middleware('auth:sanctum')->group(function () {
+    Route::get('getDepartments', [DepartmentController::class, 'index']);
+    Route::get('getDepartment/{id}', [DepartmentController::class, 'show']);
+    Route::post('saveDepartment', [DepartmentController::class, 'store']);
+    Route::put('updateDepartment/{id}', [DepartmentController::class, 'update']);
+    Route::delete('deleteDepartment/{id}', [DepartmentController::class, 'destroy']);
+});
+Route::prefix('designations')->middleware('auth:sanctum')->group(function () {
+    Route::get('getDesignations', [DesignationController::class, 'index']);
+    Route::get('getDesignation/{id}', [DesignationController::class, 'show']);
+    Route::post('saveDesignation', [DesignationController::class, 'store']);
+    Route::put('updateDesignation/{id}', [DesignationController::class, 'update']);
+    Route::delete('deleteDesignation/{id}', [DesignationController::class, 'destroy']);
+});
+Route::prefix('employees')->middleware('auth:sanctum')->group(function () {
+    Route::get('getEmployees', [EmployeeController::class, 'index']);
+    Route::get('getEmployee/{id}', [EmployeeController::class, 'show']);
+    Route::get('getByEmpID/{empID}', [EmployeeController::class, 'getByEmpID']);
+    Route::put('updateEmployeeByEmpID/{empID}', [EmployeeController::class, 'updateEmployeeByEmpID']);
+    Route::post('saveEmployee', [EmployeeController::class, 'store']);
+    Route::match(['put', 'post'], 'updateEmployee/{id}', [EmployeeController::class, 'update']);
+    Route::delete('deleteEmployee/{id}', [EmployeeController::class, 'destroy']);
 });
