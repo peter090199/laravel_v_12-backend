@@ -18,6 +18,11 @@ use App\Http\Controllers\Api\Files\ShiftController;
 use App\Http\Controllers\Api\LicenseController;
 use App\Http\Controllers\Api\Files\DesignationController;
 use App\Http\Controllers\Api\Files\EmployeeController;
+use App\Http\Controllers\Api\Files\SssTableController;
+use App\Http\Controllers\Api\Files\PhilhealthTableController;
+use App\Http\Controllers\Api\Files\PagibigTableController;
+use App\Http\Controllers\Api\Files\TaxTableController;
+
 
 Route::post('/website-chat', [WebsiteChatController::class, 'chat']);
 Route::prefix('auth')->group(function () {
@@ -130,4 +135,36 @@ Route::prefix('employees')->middleware('auth:sanctum')->group(function () {
     Route::post('saveEmployee', [EmployeeController::class, 'store']);
     Route::match(['put', 'post'], 'updateEmployee/{id}', [EmployeeController::class, 'update']);
     Route::delete('deleteEmployee/{id}', [EmployeeController::class, 'destroy']);
+});
+Route::prefix('sss')->middleware('auth:sanctum')->group(function () {
+    Route::get('getSssTable', [SssTableController::class, 'index']); // Get all SSS contribution brackets
+    Route::get('getSssTable/{id}', [SssTableController::class, 'show']); // Get one SSS bracket by ID
+    Route::get('getSssBySalary/{salary}', [SssTableController::class, 'lookup']); // Get SSS contribution bracket by salary
+    Route::post('saveSssTable', [SssTableController::class, 'store']); // Create SSS bracket
+    Route::put('updateSssTable/{id}', [SssTableController::class, 'update']); // Update SSS bracket by ID
+    Route::delete('deleteSssTable/{id}', [SssTableController::class, 'destroy']); // Delete SSS bracket by ID
+});
+Route::prefix('philhealth')->middleware('auth:sanctum')->group(function () {
+    Route::get('getPhilhealthTable', [PhilhealthTableController::class, 'index']); // Get all PhilHealth contribution brackets
+    Route::get('getPhilhealthTable/{id}', [PhilhealthTableController::class, 'show']); // Get one PhilHealth bracket by ID
+    Route::get('getPhilhealthBySalary/{salary}', [PhilhealthTableController::class, 'lookup']); // Get PhilHealth bracket by salary
+    Route::post('savePhilhealthTable', [PhilhealthTableController::class, 'store']); // Create PhilHealth bracket
+    Route::put('updatePhilhealthTable/{id}', [PhilhealthTableController::class, 'update']); // Update PhilHealth bracket by ID
+    Route::delete('deletePhilhealthTable/{id}', [PhilhealthTableController::class, 'destroy']); // Delete PhilHealth bracket by ID
+});
+Route::prefix('pagibig')->middleware('auth:sanctum')->group(function () {
+    Route::get('getPagibigTable', [PagibigTableController::class, 'index']); // Get all Pag-IBIG contribution brackets
+    Route::get('getPagibigTable/{id}', [PagibigTableController::class, 'show']); // Get one Pag-IBIG bracket by ID
+    Route::get('getPagibigBySalary/{salary}', [PagibigTableController::class, 'lookup']); // Get Pag-IBIG bracket by salary
+    Route::post('savePagibigTable', [PagibigTableController::class, 'store']); // Create Pag-IBIG bracket
+    Route::put('updatePagibigTable/{id}', [PagibigTableController::class, 'update']); // Update Pag-IBIG bracket by ID
+    Route::delete('deletePagibigTable/{id}', [PagibigTableController::class, 'destroy']); // Delete Pag-IBIG bracket by ID
+});
+Route::prefix('tax')->middleware('auth:sanctum')->group(function () {
+    Route::get('getTaxTable', [TaxTableController::class, 'index']); // Get all tax brackets
+    Route::get('getTaxTable/{id}', [TaxTableController::class, 'show']); // Get one tax bracket by ID
+    Route::get('getTaxBySalary/{salary}', [TaxTableController::class, 'lookup']); // Get tax bracket by salary
+    Route::post('saveTaxTable', [TaxTableController::class, 'store']); // Create tax bracket
+    Route::put('updateTaxTable/{id}', [TaxTableController::class, 'update']); // Update tax bracket by ID
+    Route::delete('deleteTaxTable/{id}', [TaxTableController::class, 'destroy']); // Delete tax bracket by ID
 });
