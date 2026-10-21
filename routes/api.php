@@ -22,7 +22,7 @@ use App\Http\Controllers\Api\Files\SssTableController;
 use App\Http\Controllers\Api\Files\PhilhealthTableController;
 use App\Http\Controllers\Api\Files\PagibigTableController;
 use App\Http\Controllers\Api\Files\TaxTableController;
-
+use App\Http\Controllers\Api\Files\ConfigFileController;
 
 Route::post('/website-chat', [WebsiteChatController::class, 'chat']);
 Route::prefix('auth')->group(function () {
@@ -167,4 +167,11 @@ Route::prefix('tax')->middleware('auth:sanctum')->group(function () {
     Route::post('saveTaxTable', [TaxTableController::class, 'store']); // Create tax bracket
     Route::put('updateTaxTable/{id}', [TaxTableController::class, 'update']); // Update tax bracket by ID
     Route::delete('deleteTaxTable/{id}', [TaxTableController::class, 'destroy']); // Delete tax bracket by ID
+});
+Route::middleware('auth:sanctum')->prefix('files')->group(function () {
+    Route::get('config', [ConfigFileController::class, 'index']);
+    Route::get('config/{id}', [ConfigFileController::class, 'show']);
+    Route::post('saveconfig', [ConfigFileController::class, 'store']);
+    Route::put('updateconfigId/{id}', [ConfigFileController::class, 'update']);
+    Route::delete('deleteconfigId/{id}', [ConfigFileController::class, 'destroy']);
 });
