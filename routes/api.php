@@ -23,6 +23,8 @@ use App\Http\Controllers\Api\Files\PhilhealthTableController;
 use App\Http\Controllers\Api\Files\PagibigTableController;
 use App\Http\Controllers\Api\Files\TaxTableController;
 use App\Http\Controllers\Api\Files\ConfigFileController;
+use App\Http\Controllers\Api\Files\FrequencyController;
+
 
 Route::post('/website-chat', [WebsiteChatController::class, 'chat']);
 Route::prefix('auth')->group(function () {
@@ -132,9 +134,14 @@ Route::prefix('employees')->middleware('auth:sanctum')->group(function () {
     Route::get('getEmployee/{id}', [EmployeeController::class, 'show']);
     Route::get('getByEmpID/{empID}', [EmployeeController::class, 'getByEmpID']);
     Route::put('updateEmployeeByEmpID/{empID}', [EmployeeController::class, 'updateEmployeeByEmpID']);
+    Route::put('updateEmployeeByEmpIDContibutions/{empID}', [EmployeeController::class, 'updateEmployeeByEmpIDContibutions']);
     Route::post('saveEmployee', [EmployeeController::class, 'store']);
     Route::match(['put', 'post'], 'updateEmployee/{id}', [EmployeeController::class, 'update']);
     Route::delete('deleteEmployee/{id}', [EmployeeController::class, 'destroy']);
+    Route::get('getfrequency', [FrequencyController::class, 'index']);
+    Route::get('{empID}/contributions',[EmployeeController::class, 'getEmployeeByEmpIDContibutions']
+    );
+
 });
 Route::prefix('sss')->middleware('auth:sanctum')->group(function () {
     Route::get('getSssTable', [SssTableController::class, 'index']); // Get all SSS contribution brackets
@@ -170,8 +177,10 @@ Route::prefix('tax')->middleware('auth:sanctum')->group(function () {
 });
 Route::middleware('auth:sanctum')->prefix('files')->group(function () {
     Route::get('config', [ConfigFileController::class, 'index']);
+   
     Route::get('config/{id}', [ConfigFileController::class, 'show']);
     Route::post('saveconfig', [ConfigFileController::class, 'store']);
     Route::put('updateconfigId/{id}', [ConfigFileController::class, 'update']);
     Route::delete('deleteconfigId/{id}', [ConfigFileController::class, 'destroy']);
 });
+

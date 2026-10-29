@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Throwable;
 
 class EmployeeController extends BaseController
@@ -121,6 +122,189 @@ class EmployeeController extends BaseController
 
         return $this->sendResponse($employee->fresh(),'Employees updated.');
     }
+    
+    public function updateEmployeeByEmpIDContibutions(
+        Request $request,
+        string $empID
+    ): JsonResponse {
+        $employee = Employee::where('EmpID', $empID)->first();
+
+        if (!$employee) {
+            return $this->sendNotFound('Employee not found.');
+        }
+
+        $validated = $request->validate([
+            'empId' => [
+                'required',
+                'string',
+                Rule::in([$empID]),
+            ],
+
+            'sss' => ['sometimes', 'array'],
+            'sss.enabled' => ['required_with:sss', 'boolean'],
+            'sss.ee' => ['required_with:sss', 'numeric', 'min:0'],
+            'sss.er' => ['nullable', 'numeric', 'min:0'],
+            'sss.frequency' => [
+                'nullable', 'integer', 'min:0', 'max:4'
+            ],
+
+            'philHealth' => ['sometimes', 'array'],
+            'philHealth.enabled' => [
+                'required_with:philHealth', 'boolean'
+            ],
+            'philHealth.ee' => [
+                'required_with:philHealth', 'numeric', 'min:0'
+            ],
+            'philHealth.er' => ['nullable', 'numeric', 'min:0'],
+            'philHealth.frequency' => [
+                'nullable', 'integer', 'min:0', 'max:4'
+            ],
+
+            'pagibig' => ['sometimes', 'array'],
+            'pagibig.enabled' => [
+                'required_with:pagibig', 'boolean'
+            ],
+            'pagibig.ee' => [
+                'required_with:pagibig', 'numeric', 'min:0'
+            ],
+            'pagibig.er' => ['nullable', 'numeric', 'min:0'],
+            'pagibig.frequency' => [
+                'nullable', 'integer', 'min:0', 'max:4'
+            ],
+
+            'tax' => ['sometimes', 'array'],
+            'tax.enabled' => ['required_with:tax', 'boolean'],
+            'tax.ee' => ['required_with:tax', 'numeric', 'min:0'],
+            'tax.frequency' => [
+                'nullable', 'integer', 'min:0', 'max:4'
+            ],
+
+            'insurance' => ['sometimes', 'array'],
+            'insurance.enabled' => [
+                'required_with:insurance', 'boolean'
+            ],
+            'insurance.ee' => [
+                'required_with:insurance', 'numeric', 'min:0'
+            ],
+            'insurance.frequency' => [
+                'nullable', 'integer', 'min:0', 'max:4'
+            ],
+        ]);
+
+        $mapping = [
+            'sss' => [
+                'amount' => 'SSS',
+                'employer' => 'SSSER',
+                'frequency' => 'SSSFId',
+            ],
+            'philHealth' => [
+                'amount' => 'PhilHealth',
+                'employer' => 'PhilHealthER',
+                'frequency' => 'PhilFId',
+            ],
+            'pagibig' => [
+                'amount' => 'Pagibig',
+                'employer' => 'PagibigER',
+                'frequency' => 'PagibigFId',
+            ],
+            'tax' => [
+                'amount' => 'Tax',
+                'frequency' => 'TaxFId',
+            ],
+            'insurance' => [
+                'amount' => 'Insurance',
+                'frequency' => 'InsFId',
+            ],
+        ];
+
+        $updates = [];
+
+        foreach ($mapping as $key => $columns) {
+            if (!array_key_exists($key, $validated)) {
+                continue;
+            }
+
+            $item = $validated[$key];
+            $enabled = (bool) $item['enabled'];
+
+            // Employee contribution
+            $updates[$columns['amount']] = $enabled
+                ? (float) $item['ee']
+                : 0;
+
+            // Employer contribution, if applicable
+            if (isset($columns['employer'])) {
+                $updates[$columns['employer']] = $enabled
+                    ? (float) ($item['er'] ?? 0)
+                    : 0;
+            }
+
+            // Zero means no frequency selected
+            $updates[$columns['frequency']] = $enabled
+                ? (int) ($item['frequency'] ?? 0)
+                : 0;
+        }
+
+        DB::transaction(function () use ($employee, $updates) {
+            $employee->fill($updates);
+            $employee->save();
+        });
+
+        $employee->refresh();
+
+        return $this->sendResponse(
+            $employee,
+            'Employee contributions updated successfully.'
+        );
+    }
+
+
+    public function getEmployeeByEmpIDContibutions(
+    string $empID
+): JsonResponse {
+    $employee = Employee::where('EmpID', $empID)->first();
+
+    if (!$employee) {
+        return $this->sendNotFound('Employee not found.');
+    }
+
+    return $this->sendResponse([
+        'empId' => $employee->EmpID,
+
+        'sss' => [
+            'enabled' => (float) $employee->SSS > 0,
+            'ee' => (float) ($employee->SSS ?? 0),
+            'er' => (float) ($employee->SSSER ?? 0),
+            'frequency' => $employee->SSSFId,
+        ],
+
+        'philHealth' => [
+            'enabled' => (float) $employee->PhilHealth > 0,
+            'ee' => (float) ($employee->PhilHealth ?? 0),
+            'er' => (float) ($employee->PhilHealthER ?? 0),
+            'frequency' => $employee->PhilFId,
+        ],
+
+        'pagibig' => [
+            'enabled' => (float) $employee->Pagibig > 0,
+            'ee' => (float) ($employee->Pagibig ?? 0),
+            'er' => (float) ($employee->PagibigER ?? 0),
+            'frequency' => $employee->PagibigFId,
+        ],
+
+        'tax' => [
+            'enabled' => (float) $employee->Tax > 0,
+            'ee' => (float) ($employee->Tax ?? 0),
+            'frequency' => $employee->TaxFId,
+        ],
+
+        'insurance' => [
+            'enabled' => (float) $employee->Insurance > 0,
+            'ee' => (float) ($employee->Insurance ?? 0),
+            'frequency' => $employee->InsFId,
+        ],
+    ], 'Employee deductions retrieved successfully.');
+}
 
 
     /** Preview only. The number is reserved when the employee is saved. */
